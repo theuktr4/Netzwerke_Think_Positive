@@ -22,10 +22,10 @@ public class Think_Positive_Umwandler {
 
                 Map<String,List<String>>header =getwebsiteResponseheader(URL);
                 for (Map.Entry<String, List<String>> entry : header.entrySet()) {
-                    System.out.println(entry.getValue()+"+\n");
+                    System.out.println(entry.getValue()+"\n");
                 }
                 //body
-                getWebsiteBody(URL);
+                bw.write(getWebsiteBody(URL));
                 bw.close();
 
             } catch (IOException ex){
