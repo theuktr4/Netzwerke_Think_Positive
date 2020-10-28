@@ -1,8 +1,9 @@
+import javax.swing.text.Document;
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.URL;
+import java.net.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Think_Positive_Umwandler {
     public static final int PORT=8082;
@@ -18,8 +19,13 @@ public class Think_Positive_Umwandler {
                 //header
                 bw.write("HTTP/1.1 200 OK\r\n");
                 bw.write("\r\n");
+
+                Map<String,List<String>>header =getwebsiteResponseheader(URL);
+                for (Map.Entry<String, List<String>> entry : header.entrySet()) {
+                    System.out.println(entry.getValue()+"+\n");
+                }
                 //body
-                bw.write(getWebsite(URL));
+                getWebsiteBody(URL);
                 bw.close();
 
             } catch (IOException ex){
@@ -29,21 +35,37 @@ public class Think_Positive_Umwandler {
             System.out.println("Server beendet");
         }
     }
-    String getWebsite(String urlString){
+    String getWebsiteBody(String urlString){
         String res= "";
-        try(InputStream input = new URL(urlString).openStream()){
+        try {
+            URL urlObj = new URL(urlString);
+            URLConnection conn = urlObj.openConnection();
+            InputStream input = conn.getInputStream();
             BufferedReader br = new BufferedReader(new InputStreamReader(input));
             System.out.println("\n received:");
-            for(String line = br.readLine();!line.isEmpty(); line = br.readLine()) {
-                res +=  line;
+
+            for(String line = br.readLine();line != null; line = br.readLine()) {
+                res += line;
                 System.out.println(line);
             }
+
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
         return res;
+    }
+    Map<String,List<String>> getwebsiteResponseheader(String urlString){
+        try {
+            URL urlObj = new URL(urlString);
+            URLConnection conn = urlObj.openConnection();
+            Map<String, List<String>> header = conn.getHeaderFields();
+            return header;
+        } catch (IOException e) {
+            System.out.println("Fehler bei Headerabfrage");
+            return null;
+        }
     }
 
     String modifyHTML(String original){
