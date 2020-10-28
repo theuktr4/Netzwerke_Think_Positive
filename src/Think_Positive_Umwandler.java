@@ -22,7 +22,8 @@ public class Think_Positive_Umwandler {
 
                 Map<String,List<String>>header =getwebsiteResponseheader(URL);
                 for (Map.Entry<String, List<String>> entry : header.entrySet()) {
-                    System.out.println(entry.getValue()+"\n");
+                    System.out.println(entry.getValue()+"\n")
+                    ;
                 }
                 //body
                 bw.write(getWebsiteBody(URL));
@@ -45,8 +46,8 @@ public class Think_Positive_Umwandler {
             System.out.println("\n received:");
 
             for(String line = br.readLine();line != null; line = br.readLine()) {
-                res += line;
-                System.out.println(line);
+                line.replaceAll("[(KI)(Maschinelles Lernen)(Java)(Computer)(MMIX)(RISC)(CISC)(Debugger)(Informatik)(Student)(Studentin)(Studierende)(Windows)(Linux)(Software)(Informatiker)(InformatikerInnen)(Informatikerin)]","yeah");
+                res = res + line.replaceAll("<img\s.*>","<img src =https://upload.wikimedia.org/wikipedia/commons/8/8d/Smiley_head_happy.svg>");
             }
 
         } catch (MalformedURLException e) {
@@ -54,6 +55,8 @@ public class Think_Positive_Umwandler {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        //String temp= res.replaceAll("<img\s.*>","<img src =https://upload.wikimedia.org/wikipedia/commons/8/8d/Smiley_head_happy.svg>");
+        System.out.println(res);
         return res;
     }
     Map<String,List<String>> getwebsiteResponseheader(String urlString){
