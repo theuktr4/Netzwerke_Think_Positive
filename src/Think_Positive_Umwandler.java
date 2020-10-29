@@ -1,6 +1,7 @@
 import javax.swing.text.Document;
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,13 +19,15 @@ public class Think_Positive_Umwandler {
 
                     URL urlObj = new URL(URL);
                     URLConnection connection = urlObj.openConnection();
+                    String body = getWebsiteBody(connection);
+                    int contentLength = body.getBytes("UTF-8").length;
                     //Header
-                    //bw.write(getHeaderAsString(getwebsiteResponseheader(connection)));
-                    bw.write("HTTP/1.1 200 OK\r\n");
-                    bw.write("\r\n");
+                    bw.write(getHeaderAsString(getwebsiteResponseheader(connection,contentLength)));
+                    //bw.write("HTTP/1.1 200 OK\r\n");
+                    //bw.write("\r\n");
                     bw.flush();
                     //Body
-                    bw.write(getWebsiteBody(connection));
+                    bw.write(body);
                     bw.close();
 
                 } catch (IOException ex) {
@@ -46,7 +49,6 @@ public class Think_Positive_Umwandler {
                 //HTML verändern
                 res = res + modifyLine(line);
             }
-            input.close();
 
         } catch (MalformedURLException e) {
             e.printStackTrace();
@@ -56,14 +58,16 @@ public class Think_Positive_Umwandler {
         System.out.println("body: "+res);
         return res;
     }
-    Map<String,List<String>> getwebsiteResponseheader(URLConnection conn){
-        Map<String, List<String>> header = conn.getHeaderFields();
+    Map<String,List<String>> getwebsiteResponseheader(URLConnection conn, int contentLength){
+        Map<String, List<String>> header = new HashMap<String, List<String>>(conn.getHeaderFields());
+        List<String> temp = new ArrayList<String>();
+        temp.add(String.valueOf(contentLength));
+        header.replace("Content-Length",temp);
         return header;
     }
     String getHeaderAsString(Map<String,List<String>> rawHeader) {
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, List<String>> entry : rawHeader.entrySet()) {
-            System.out.println("Standart"+entry.getKey()+entry.getValue());
             if(entry.getKey()==null){
                 sb.insert(0,entry.getValue().get(0)+"\r\n");
             }
