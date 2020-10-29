@@ -38,6 +38,7 @@ public class Think_Positive_Umwandler {
     }
     String getWebsiteBody(String urlString){
         String res= "";
+        String[] keywords = {"KI","Maschinelles Lernen", "Java", "Computer", "MMIX", "RISC","CISC","Debugger","Informatik","Student", "Studentin","Studierende","Windows","Linux","Software","Informtiker","infomatikerInnen","informatikerin"};
         try {
             URL urlObj = new URL(urlString);
             URLConnection conn = urlObj.openConnection();
@@ -46,7 +47,9 @@ public class Think_Positive_Umwandler {
             System.out.println("\n received:");
 
             for(String line = br.readLine();line != null; line = br.readLine()) {
-                line.replaceAll("[(KI)(Maschinelles Lernen)(Java)(Computer)(MMIX)(RISC)(CISC)(Debugger)(Informatik)(Student)(Studentin)(Studierende)(Windows)(Linux)(Software)(Informatiker)(InformatikerInnen)(Informatikerin)]","yeah");
+                for(String s: keywords){
+                    line = line.replaceAll(s,s+"(Yeah)");
+                }
                 res = res + line.replaceAll("<img\s.*>","<img src =https://upload.wikimedia.org/wikipedia/commons/8/8d/Smiley_head_happy.svg>");
             }
 
