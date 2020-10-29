@@ -1,6 +1,7 @@
 import javax.swing.text.Document;
 import java.io.*;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,13 +15,11 @@ public class Think_Positive_Umwandler {
         try(ServerSocket server = new ServerSocket(PORT)){
             while(true) {
                 try (Socket s = server.accept()) {
-                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
-                    BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
-
+                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(s.getOutputStream(), StandardCharsets.ISO_8859_1));
                     URL urlObj = new URL(URL);
                     URLConnection connection = urlObj.openConnection();
                     String body = getWebsiteBody(connection);
-                    int contentLength = body.getBytes("UTF-8").length;
+                    int contentLength = body.getBytes("ISO_8859_1").length;
                     //Header
                     bw.write(getHeaderAsString(getwebsiteResponseheader(connection,contentLength)));
                     //bw.write("HTTP/1.1 200 OK\r\n");
@@ -42,12 +41,12 @@ public class Think_Positive_Umwandler {
         String res= "";
         try {
             InputStream input = conn.getInputStream();
-            BufferedReader br = new BufferedReader(new InputStreamReader(input));
+            BufferedReader br = new BufferedReader(new InputStreamReader(input, StandardCharsets.ISO_8859_1));
             System.out.println("\n received:");
             //HTML einlesen
             for(String line = br.readLine();line != null; line = br.readLine()) {
                 //HTML verändern
-                res = res + modifyLine(line);
+                res = res + modifyLine(line)+"\r\n";
             }
 
         } catch (MalformedURLException e) {
