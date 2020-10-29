@@ -7,75 +7,93 @@ import java.util.Map;
 
 public class Think_Positive_Umwandler {
     public static final int PORT=8082;
-    public static final String HTML_DOC="<html> Hi wie gehts</html>";
     private String URL;
     public Think_Positive_Umwandler(String URL){
         this.URL = URL;
         try(ServerSocket server = new ServerSocket(PORT)){
-            try(Socket s = server.accept()){
-                BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
-                BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            while(true) {
+                try (Socket s = server.accept()) {
+                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
+                    BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
 
-                //header
-                bw.write("HTTP/1.1 200 OK\r\n");
-                bw.write("\r\n");
+                    URL urlObj = new URL(URL);
+                    URLConnection connection = urlObj.openConnection();
+                    //Header
+                    //bw.write(getHeaderAsString(getwebsiteResponseheader(connection)));
+                    bw.write("HTTP/1.1 200 OK\r\n");
+                    bw.write("\r\n");
+                    bw.flush();
+                    //Body
+                    bw.write(getWebsiteBody(connection));
+                    bw.close();
 
-                Map<String,List<String>>header =getwebsiteResponseheader(URL);
-                for (Map.Entry<String, List<String>> entry : header.entrySet()) {
-                    System.out.println(entry.getValue()+"\n")
-                    ;
+                } catch (IOException ex) {
+                    System.out.println("Client disconnected");
                 }
-                //body
-                bw.write(getWebsiteBody(URL));
-                bw.close();
-
-            } catch (IOException ex){
-                System.out.println("Client disconnected");
             }
         } catch (IOException ex){
             System.out.println("Server beendet");
         }
     }
-    String getWebsiteBody(String urlString){
+    String getWebsiteBody(URLConnection conn){
         String res= "";
-        String[] keywords = {"KI","Maschinelles Lernen", "Java", "Computer", "MMIX", "RISC","CISC","Debugger","Informatik","Student", "Studentin","Studierende","Windows","Linux","Software","Informtiker","infomatikerInnen","informatikerin"};
         try {
-            URL urlObj = new URL(urlString);
-            URLConnection conn = urlObj.openConnection();
             InputStream input = conn.getInputStream();
             BufferedReader br = new BufferedReader(new InputStreamReader(input));
             System.out.println("\n received:");
-
+            //HTML einlesen
             for(String line = br.readLine();line != null; line = br.readLine()) {
-                for(String s: keywords){
-                    line = line.replaceAll(s,s+"(Yeah)");
-                }
-                res = res + line.replaceAll("<img\s.*>","<img src =https://upload.wikimedia.org/wikipedia/commons/8/8d/Smiley_head_happy.svg>");
+                //HTML verändern
+                res = res + modifyLine(line);
             }
+            input.close();
 
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //String temp= res.replaceAll("<img\s.*>","<img src =https://upload.wikimedia.org/wikipedia/commons/8/8d/Smiley_head_happy.svg>");
-        System.out.println(res);
+        System.out.println("body: "+res);
         return res;
     }
-    Map<String,List<String>> getwebsiteResponseheader(String urlString){
-        try {
-            URL urlObj = new URL(urlString);
-            URLConnection conn = urlObj.openConnection();
-            Map<String, List<String>> header = conn.getHeaderFields();
-            return header;
-        } catch (IOException e) {
-            System.out.println("Fehler bei Headerabfrage");
-            return null;
+    Map<String,List<String>> getwebsiteResponseheader(URLConnection conn){
+        Map<String, List<String>> header = conn.getHeaderFields();
+        return header;
+    }
+    String getHeaderAsString(Map<String,List<String>> rawHeader) {
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, List<String>> entry : rawHeader.entrySet()) {
+            System.out.println("Standart"+entry.getKey()+entry.getValue());
+            if(entry.getKey()==null){
+                sb.insert(0,entry.getValue().get(0)+"\r\n");
+            }
+            else if(entry.getValue().size()>1){
+                sb.append(entry.getKey());
+                sb.append(":");
+                for(String s:entry.getValue()){
+                    sb.append(s+",");
+                }
+                sb.deleteCharAt(sb.length()-1);
+            }
+            else{
+                sb.append(entry.getKey());
+                sb.append(":");
+                sb.append(entry.getValue().get(0)+"\r\n");
+            }
+
         }
+        sb.append("\r\n");
+        System.out.println(sb.toString());
+        return sb.toString();
     }
 
-    String modifyHTML(String original){
-        return null;
+    String modifyLine(String line){ ;
+        String[] keywords = {"KI","Maschinelles Lernen", "Java", "Computer", "MMIX", "RISC","CISC","Debugger","Informatik","Student", "Studentin","Studierende","Windows","Linux","Software","Informtiker","infomatikerInnen","informatikerin"};
+        for(String s: keywords){
+            line = line.replaceAll(s,s+"(Yeah)");
+        }
+        line = line.replaceAll("<img\s.*>","<img src =https://upload.wikimedia.org/wikipedia/commons/8/8d/Smiley_head_happy.svg>");
+        return line;
     }
 
     public static void main(String[] args) {
