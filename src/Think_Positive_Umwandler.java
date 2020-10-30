@@ -1,6 +1,7 @@
 import javax.swing.text.Document;
 import java.io.*;
 import java.net.*;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,7 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 public class Think_Positive_Umwandler {
-    public static final int PORT = 8082;
+    private static final int PORT = 8082;
+    private Charset ENCODING = StandardCharsets.ISO_8859_1;
     private String URL;
 
     public Think_Positive_Umwandler(String protocol, String URL) {
@@ -17,18 +19,19 @@ public class Think_Positive_Umwandler {
         try (ServerSocket server = new ServerSocket(PORT)) {
             while (true) {
                 try (Socket s = server.accept()) {
-                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(s.getOutputStream(), StandardCharsets.ISO_8859_1));
-
+                    System.out.println("Client connected");
+                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(s.getOutputStream(), ENCODING));
+                    //Verbindung zur übergebenen Webseite
                     URL urlObj = new URL(protocol + "://" + URL);
-                    URLConnection connection = urlObj.openConnection();
-                    String body = getWebsiteBody(connection);
-                    int contentLength = body.getBytes("ISO_8859_1").length;
-                    //Header
-                    bw.write(getHeaderAsString(getwebsiteResponseheader(connection, contentLength)));
-                    //bw.write("HTTP/1.1 200 OK\r\n");
-                    //bw.write("\r\n");
+                    URLConnection targetHost = urlObj.openConnection();
+                    //Body ermitteln
+                    String body = getWebsiteBody(targetHost);
+                    //Content Length berechnen
+                    int contentLength = body.getBytes(ENCODING).length;
+                    //Header von Zielwebseite an Client senden
+                    bw.write(getHeaderAsString(getwebsiteResponseheader(targetHost, contentLength)));
                     bw.flush();
-                    //Body
+                    //Webseite an Client senden
                     bw.write(body);
                     bw.close();
 
@@ -45,7 +48,7 @@ public class Think_Positive_Umwandler {
         String res = "";
         try {
             InputStream input = conn.getInputStream();
-            BufferedReader br = new BufferedReader(new InputStreamReader(input, StandardCharsets.ISO_8859_1));
+            BufferedReader br = new BufferedReader(new InputStreamReader(input,ENCODING));
             System.out.println("\n received:");
             //HTML einlesen
             for (String line = br.readLine(); line != null; line = br.readLine()) {
@@ -56,7 +59,7 @@ public class Think_Positive_Umwandler {
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Verbindung zum TH fehlgeschlagen");
         }
         System.out.println("body: " + res);
         return res;
