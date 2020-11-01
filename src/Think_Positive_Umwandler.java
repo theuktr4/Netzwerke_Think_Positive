@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Think_Positive_Umwandler {
@@ -112,8 +113,14 @@ public class Think_Positive_Umwandler {
         for (String s : keywords) {
             line = line.replaceAll(s, s + "(Yeah)");
         }
-        //Pattern imageClass = Pattern.compile("\"\\s.*\"");
-        line = line.replaceAll("<img\\s.*>", "<img src =https://upload.wikimedia.org/wikipedia/commons/8/8d/Smiley_head_happy.svg>");
+        Pattern imageClass = Pattern.compile("class=\"(.*?)\"");
+        Matcher matcher = imageClass.matcher(line);
+        String htmlClass = "";
+        if(matcher.find()){
+            htmlClass = matcher.group(0);
+            System.err.println("Klasse "+htmlClass);
+        }
+        line = line.replaceAll("<img\\s.*>", "<img src =https://upload.wikimedia.org/wikipedia/commons/8/8d/Smiley_head_happy.svg "+htmlClass+">");
         return line;
     }
 
