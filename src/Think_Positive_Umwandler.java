@@ -56,7 +56,10 @@ public class Think_Positive_Umwandler {
             System.err.println("Server beendet");
         }
     }
-
+    /* Methode liefert als Ergebnis eine HTML Seite als String zurück
+        param:  conn Referenz auf die URL Verbindung
+        return: html der Webseite als String
+     */
     String getWebsiteBody(URLConnection conn) {
         String res = "";
         try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(),ENCODING))){
@@ -72,24 +75,37 @@ public class Think_Positive_Umwandler {
         } catch (IOException e) {
             System.err.println("Verbindung zum TH abgebrochen");
         }
-        System.out.println("body: " + res);
+        //System.out.println("body: " + res);
         return res;
     }
-
+    /* Methode liefert als Ergebnis eine HTML Seite als String zurück
+        param:  conn: Referenz auf die URL Verbindung
+                contentLength: Die Größe des Antwort payloads
+        return: Webseiten Header als Map
+     */
     Map<String, List<String>> getwebsiteResponseheader(URLConnection conn, int contentLength) {
+        //Header des TH geben
         Map<String, List<String>> header = new HashMap<String, List<String>>(conn.getHeaderFields());
         List<String> temp = new ArrayList<String>();
         temp.add(String.valueOf(contentLength));
+        //Content Length anpassen
         header.replace("Content-Length", temp);
+        //chunked Encoding löschen (für Webseiten wie google.com)
         header.remove("Transfer-Encoding");
         return header;
     }
-
+    /* Methode liefert den Webseiten Header als versendbare String
+    param:  rawHeader Header als Map
+    return: Webseiten Header als versendbare String
+ */
     String getHeaderAsString(Map<String, List<String>> rawHeader) {
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<String, List<String>> entry : rawHeader.entrySet()) {
+            //Header Kopf
             if (entry.getKey() == null) {
                 sb.insert(0, entry.getValue().get(0) + "\r\n");
+
+                //mehr als einen Eintrag als Value
             } else if (entry.getValue().size() > 1) {
                 sb.append(entry.getKey());
                 sb.append(":");
@@ -108,15 +124,21 @@ public class Think_Positive_Umwandler {
         //System.out.println(sb.toString());
         return sb.toString();
     }
-
+    /* Verändert eine HTML Zeile, wie in den Anforderungen festgelegt
+    param:  line    original Zeile
+    return: veränderte Zeile als String
+ */
     String modifyLine(String line) {
+        //Wörter, an denen Yeah drangehängt werden soll
         String[] keywords = {"KI", "Maschinelles Lernen", "Java", "Computer", "MMIX", "RISC", "CISC", "Debugger", "Informatik", "Student", "Studentin", "Studierende", "Windows", "Linux", "Software", "Informtiker", "InfomatikerInnen", "Informatikerin"};
+        //Yeah anbringen...
         for (String s : keywords) {
-            line = line.replaceAll("(?i)"+s, s + "(Yeah)");
+            //(?i) um Groaß-Kleinschreibung zu ignorieren
+            line = line.replaceAll("(?i)"+s+"\\s", s + "(Yeah) ");
         }
+        //Bilder ersetzen, ohne class, id o.ä zu verändern
         Pattern imageClass = Pattern.compile("<img\\s.*>");
         Matcher matcher = imageClass.matcher(line);
-        String htmlClass = "";
         if(matcher.find()){
             line = line.replaceAll("src=\"(.*?)\"", "src =https://upload.wikimedia.org/wikipedia/commons/8/8d/Smiley_head_happy.svg");
         }
