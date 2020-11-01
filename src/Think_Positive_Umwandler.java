@@ -23,7 +23,7 @@ public class Think_Positive_Umwandler {
                 try (Socket s = server.accept()) {
                     System.out.println("Client connected");
                     BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(s.getOutputStream(), ENCODING));
-                    BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream()));
+                    BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream(), ENCODING));
                     //Einlesen des HTTP Requests
                     String request = br.readLine();
                     if(!request.contains("GET")){
@@ -49,18 +49,18 @@ public class Think_Positive_Umwandler {
                     }
 
                 } catch (IOException ex) {
-                    System.out.println("Client disconnected");
+                    System.err.println("Client disconnected");
                 }
             }
         } catch (IOException ex) {
-            System.out.println("Server beendet");
+            System.err.println("Server beendet");
         }
     }
 
     String getWebsiteBody(URLConnection conn) {
         String res = "";
         try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(),ENCODING))){
-            System.out.println("\n received:");
+            //System.out.println("\n received:");
             //HTML einlesen
             for (String line = br.readLine(); line != null; line = br.readLine()) {
                 //HTML verändern
@@ -70,7 +70,7 @@ public class Think_Positive_Umwandler {
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
-            System.out.println("Verbindung zum TH abgebrochen");
+            System.err.println("Verbindung zum TH abgebrochen");
         }
         System.out.println("body: " + res);
         return res;
@@ -81,6 +81,7 @@ public class Think_Positive_Umwandler {
         List<String> temp = new ArrayList<String>();
         temp.add(String.valueOf(contentLength));
         header.replace("Content-Length", temp);
+        header.remove("Transfer-Encoding");
         return header;
     }
 
@@ -104,23 +105,21 @@ public class Think_Positive_Umwandler {
 
         }
         sb.append("\r\n");
-        System.out.println(sb.toString());
+        //System.out.println(sb.toString());
         return sb.toString();
     }
 
     String modifyLine(String line) {
-        String[] keywords = {"KI", "Maschinelles Lernen", "Java", "Computer", "MMIX", "RISC", "CISC", "Debugger", "Informatik", "Student", "Studentin", "Studierende", "Windows", "Linux", "Software", "Informtiker", "infomatikerInnen", "informatikerin"};
+        String[] keywords = {"KI", "Maschinelles Lernen", "Java", "Computer", "MMIX", "RISC", "CISC", "Debugger", "Informatik", "Student", "Studentin", "Studierende", "Windows", "Linux", "Software", "Informtiker", "InfomatikerInnen", "Informatikerin"};
         for (String s : keywords) {
-            line = line.replaceAll(s, s + "(Yeah)");
+            line = line.replaceAll("(?i)"+s, s + "(Yeah)");
         }
-        Pattern imageClass = Pattern.compile("class=\"(.*?)\"");
+        Pattern imageClass = Pattern.compile("<img\\s.*>");
         Matcher matcher = imageClass.matcher(line);
         String htmlClass = "";
         if(matcher.find()){
-            htmlClass = matcher.group(0);
-            System.err.println("Klasse "+htmlClass);
+            line = line.replaceAll("src=\"(.*?)\"", "src =https://upload.wikimedia.org/wikipedia/commons/8/8d/Smiley_head_happy.svg");
         }
-        line = line.replaceAll("<img\\s.*>", "<img src =https://upload.wikimedia.org/wikipedia/commons/8/8d/Smiley_head_happy.svg "+htmlClass+">");
         return line;
     }
 
