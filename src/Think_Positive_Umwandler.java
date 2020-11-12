@@ -25,29 +25,30 @@ public class Think_Positive_Umwandler {
                     BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(s.getOutputStream(), ENCODING));
                     BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream(), ENCODING));
                     //Einlesen des HTTP Requests
-                    String request_firstline = br.readLine();
-                    if (!request_firstline.contains("GET")) {
+                    String requestFirstLine = br.readLine();
+                    if (!requestFirstLine.contains("GET")) {
                         bw.write("HTTP/1.1 405 Method Not Allowed\n\r");
                         bw.write("\n\r");
                         bw.write("<html><body><h>405 Method Not Allowed</h></body></html>");
                         bw.flush();
                     } else {
                         //URL generieren
-                        String targetAdress = request_firstline.split(" ")[1];
+                        String targetAdress = requestFirstLine.split(" ")[1];
                         String baseAdress = URL;
 
-                        for (String line = br.readLine();line.length()!=0; line = br.readLine()) {
+                        for (String line = br.readLine(); line.length() != 0; line = br.readLine()) {
                             //HTML verändern
-                            if(line.contains("HOST:")){
-                                baseAdress = line.split(" ")[1].replaceAll("\r\n","");
+                            if (line.contains("HOST:")) {
+                                baseAdress = line.split(" ")[1].replaceAll("\r\n", "");
                             }
-                            if(line.equals("\r\n")){
+                            if (line.equals("\r\n")) {
                                 break;
                             }
                         }
-                        this.URL =baseAdress+targetAdress;
-                        System.out.println(this.URL);
+                        this.URL = baseAdress + targetAdress;
+                        //System.out.println(this.URL);
 
+                        //verbindungsaufbau
                         URL urlObj = new URL(protocol + "://" + this.URL);
                         URLConnection targetHost = urlObj.openConnection();
                         //Body ermitteln
@@ -63,8 +64,7 @@ public class Think_Positive_Umwandler {
                     }
 
                 } catch (IOException ex) {
-                    ex.printStackTrace();
-                    //System.err.println("Client disconnected");
+                    System.err.println("Client disconnected");
                 }
             }
         } catch (IOException ex) {
@@ -91,7 +91,6 @@ public class Think_Positive_Umwandler {
         } catch (IOException e) {
             System.err.println("Verbindung zum TH abgebrochen");
         }
-        System.out.println("body: " + res);
         return res;
     }
 
@@ -153,7 +152,7 @@ public class Think_Positive_Umwandler {
         //Yeah anbringen...
         for (String s : keywords) {
             //(?i) um Groaß-Kleinschreibung zu ignorieren
-            line = line.replaceAll("(?i)" + s + "\\s", s + "(Yeah) ");
+            line = line.replaceAll("(?i)" + s, s + "(Yeah) ");
         }
         //Bilder ersetzen, ohne class, id o.ä zu verändern
         Pattern imageClass = Pattern.compile("<img\\s.*>");
