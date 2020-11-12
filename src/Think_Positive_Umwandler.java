@@ -25,16 +25,30 @@ public class Think_Positive_Umwandler {
                     BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(s.getOutputStream(), ENCODING));
                     BufferedReader br = new BufferedReader(new InputStreamReader(s.getInputStream(), ENCODING));
                     //Einlesen des HTTP Requests
-                    String request = br.readLine();
-                    if(!request.contains("GET")){
+                    String request_firstline = br.readLine();
+                    if (!request_firstline.contains("GET")) {
                         bw.write("HTTP/1.1 405 Method Not Allowed\n\r");
                         bw.write("\n\r");
                         bw.write("<html><body><h>405 Method Not Allowed</h></body></html>");
                         bw.flush();
-                    }
-                    else {
-                        //Verbindung zur übergebenen Webseite
-                        URL urlObj = new URL(protocol + "://" + URL);
+                    } else {
+                        //URL generieren
+                        String targetAdress = request_firstline.split(" ")[1];
+                        String baseAdress = URL;
+
+                        for (String line = br.readLine();line.length()!=0; line = br.readLine()) {
+                            //HTML verändern
+                            if(line.contains("HOST:")){
+                                baseAdress = line.split(" ")[1].replaceAll("\r\n","");
+                            }
+                            if(line.equals("\r\n")){
+                                break;
+                            }
+                        }
+                        this.URL =baseAdress+targetAdress;
+                        System.out.println(this.URL);
+
+                        URL urlObj = new URL(protocol + "://" + this.URL);
                         URLConnection targetHost = urlObj.openConnection();
                         //Body ermitteln
                         String body = getWebsiteBody(targetHost);
@@ -49,20 +63,22 @@ public class Think_Positive_Umwandler {
                     }
 
                 } catch (IOException ex) {
-                    System.err.println("Client disconnected");
+                    ex.printStackTrace();
+                    //System.err.println("Client disconnected");
                 }
             }
         } catch (IOException ex) {
             System.err.println("Server beendet");
         }
     }
+
     /* Methode liefert als Ergebnis eine HTML Seite als String zurück
         param:  conn Referenz auf die URL Verbindung
         return: html der Webseite als String
      */
     String getWebsiteBody(URLConnection conn) {
         String res = "";
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(),ENCODING))){
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), ENCODING))) {
             //System.out.println("\n received:");
             //HTML einlesen
             for (String line = br.readLine(); line != null; line = br.readLine()) {
@@ -75,9 +91,10 @@ public class Think_Positive_Umwandler {
         } catch (IOException e) {
             System.err.println("Verbindung zum TH abgebrochen");
         }
-        //System.out.println("body: " + res);
+        System.out.println("body: " + res);
         return res;
     }
+
     /* Methode liefert als Ergebnis eine HTML Seite als String zurück
         param:  conn: Referenz auf die URL Verbindung
                 contentLength: Die Größe des Antwort payloads
@@ -94,6 +111,7 @@ public class Think_Positive_Umwandler {
         header.remove("Transfer-Encoding");
         return header;
     }
+
     /* Methode liefert den Webseiten Header als versendbare String
     param:  rawHeader Header als Map
     return: Webseiten Header als versendbare String
@@ -124,6 +142,7 @@ public class Think_Positive_Umwandler {
         //System.out.println(sb.toString());
         return sb.toString();
     }
+
     /* Verändert eine HTML Zeile, wie in den Anforderungen festgelegt
     param:  line    original Zeile
     return: veränderte Zeile als String
@@ -134,19 +153,19 @@ public class Think_Positive_Umwandler {
         //Yeah anbringen...
         for (String s : keywords) {
             //(?i) um Groaß-Kleinschreibung zu ignorieren
-            line = line.replaceAll("(?i)"+s+"\\s", s + "(Yeah) ");
+            line = line.replaceAll("(?i)" + s + "\\s", s + "(Yeah) ");
         }
         //Bilder ersetzen, ohne class, id o.ä zu verändern
         Pattern imageClass = Pattern.compile("<img\\s.*>");
         Matcher matcher = imageClass.matcher(line);
-        if(matcher.find()){
+        if (matcher.find()) {
             line = line.replaceAll("src=\"(.*?)\"", "src =https://upload.wikimedia.org/wikipedia/commons/8/8d/Smiley_head_happy.svg");
         }
         return line;
     }
 
     public static void main(String[] args) {
-        if(args.length<2){
+        if (args.length < 2) {
             System.err.println("Zu wenige Argumente übergeben: expected String<protocol>(http,https) String<URL>");
             System.exit(1);
         }
